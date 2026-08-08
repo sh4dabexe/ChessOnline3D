@@ -312,10 +312,12 @@ router.patch('/:id/join', async (req: Request, res: Response) => {
 router.patch('/:id/move', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { player_id, fen, san } = req.body as {
+    const { player_id, fen, san, status: clientStatus, winner: clientWinner } = req.body as {
       player_id?: string;
       fen?: string;
       san?: string;
+      status?: 'waiting' | 'playing' | 'finished';
+      winner?: string | null;
     };
 
     if (!player_id || !fen || !san) {
@@ -351,8 +353,8 @@ router.patch('/:id/move', async (req: Request, res: Response) => {
 
     let wTime = room.white_time_left;
     let bTime = room.black_time_left;
-    let status: 'waiting' | 'playing' | 'finished' = room.status;
-    let winner = room.winner;
+    let status: 'waiting' | 'playing' | 'finished' = clientStatus || room.status;
+    let winner = clientWinner !== undefined ? clientWinner : room.winner;
 
     if (room.time_control > 0) {
       if (playerColor === 'white') {

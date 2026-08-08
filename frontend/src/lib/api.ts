@@ -35,10 +35,10 @@ export const api = {
   },
 
   /** Push a move */
-  pushMove(roomId: string, playerId: string, fen: string, san: string): Promise<{ ok: boolean; pgn_moves: string[]; white_time_left: number; black_time_left: number }> {
+  pushMove(roomId: string, playerId: string, fen: string, san: string, status?: string, winner?: string | null): Promise<{ ok: boolean; pgn_moves: string[]; white_time_left: number; black_time_left: number }> {
     return request(`/rooms/${roomId}/move`, {
       method: 'PATCH',
-      body: JSON.stringify({ player_id: playerId, fen, san }),
+      body: JSON.stringify({ player_id: playerId, fen, san, status, winner }),
     });
   },
 

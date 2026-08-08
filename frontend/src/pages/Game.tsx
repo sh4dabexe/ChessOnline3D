@@ -356,8 +356,19 @@ export default function Game() {
     const san = result.san;
     selectSquare(null);
 
+    let nextStatus: 'playing' | 'finished' = 'playing';
+    let nextWinner: 'white' | 'black' | 'draw' | null = null;
+
+    if (chess.isCheckmate()) {
+      nextStatus = 'finished';
+      nextWinner = myColor === 'white' ? 'white' : 'black';
+    } else if (chess.isDraw() || chess.isStalemate()) {
+      nextStatus = 'finished';
+      nextWinner = 'draw';
+    }
+
     try {
-      await api.pushMove(roomId, myPlayerId, newFen, san);
+      await api.pushMove(roomId, myPlayerId, newFen, san, nextStatus, nextWinner);
       setFen(newFen);
       setPgnMoves([...pgnMoves, san]);
 
@@ -368,16 +379,18 @@ export default function Game() {
         ts: Date.now(),
       });
 
-      if (chess.isCheckmate()) {
-        sound.playVictory();
-        toast.success('Checkmate!');
+      if (nextStatus === 'finished') {
+        setStatus('finished');
+        setWinner(nextWinner);
+        if (nextWinner === 'draw') {
+          toast('Draw match!', { icon: '🤝' });
+        } else {
+          sound.playVictory();
+          toast.success(`Checkmate! Winner: ${nextWinner === 'white' ? 'White' : 'Gold'}`);
+        }
       } else if (chess.isCheck()) {
         sound.playCheck();
         toast('Check! ♟', { icon: '⚠️' });
-      } else if (chess.isStalemate()) {
-        toast('Stalemate — it\'s a draw!');
-      } else if (chess.isDraw()) {
-        toast('Draw by repetition or 50-move rule');
       }
     } catch (err) {
       toast.error((err as Error).message || 'Move failed');
