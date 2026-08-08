@@ -74,26 +74,26 @@ const goldenOakTexture = createGoldenOakTexture();
 const WHITE_PIECE_MAT = new THREE.MeshStandardMaterial({
   color: '#F4F0E8',
   map: marbleTexture,
-  roughness: 0.08,
-  metalness: 0.15,
+  roughness: 0.16,
+  metalness: 0.02,
 });
 
 // Brown Piece: Polished Golden Oak
 const BLACK_PIECE_MAT = new THREE.MeshStandardMaterial({
   color: '#B8935A',
   map: goldenOakTexture,
-  roughness: 0.10,
-  metalness: 0.18,
+  roughness: 0.18,
+  metalness: 0.03,
 });
 
 // ── Crown Accent Materials ────────────────────────────────────────────────────
 // Golden accent for brown (black) pieces - Ultra-shiny metallic gold with clearcoat lacquer
 const GOLD_ACCENT_MAT = new THREE.MeshPhysicalMaterial({
   color: '#FFD700',
-  metalness: 1.0,
-  roughness: 0.0,
+  metalness: 0.75,
+  roughness: 0.12,
   clearcoat: 1.0,
-  clearcoatRoughness: 0.02,
+  clearcoatRoughness: 0.05,
   reflectivity: 1.0,
   emissive: '#FFB700',
   emissiveIntensity: 0.25,
@@ -102,10 +102,10 @@ const GOLD_ACCENT_MAT = new THREE.MeshPhysicalMaterial({
 // Ivory/pearl accent for white pieces - Ultra-shiny polished white gold / pearl with clearcoat
 const WHITE_ACCENT_MAT = new THREE.MeshPhysicalMaterial({
   color: '#FFFFFF',
-  metalness: 0.65,
-  roughness: 0.0,
+  metalness: 0.25,
+  roughness: 0.12,
   clearcoat: 1.0,
-  clearcoatRoughness: 0.01,
+  clearcoatRoughness: 0.05,
   reflectivity: 1.0,
   emissive: '#FFFFFF',
   emissiveIntensity: 0.15,
