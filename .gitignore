@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment / Secret Files (NEVER PUSH SECRETS TO GITHUB)
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+
+# Build Outputs
+dist/
+build/
+**/dist/
+**/build/
+
+# Logs
+*.log
+logs/
+
+# OS / Editor Files
+.DS_Store
+.vscode/
+.idea/
