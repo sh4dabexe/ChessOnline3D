@@ -1145,3 +1145,47 @@ input::placeholder { color: var(--text-muted); }
   }
 }
 
+
+/* ── Captured Pieces Tray ────────────────────────────────────────────────── */
+.captured-pieces-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 14px 6px;
+  min-height: 22px;
+  flex-wrap: wrap;
+}
+
+.captured-icons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.captured-group {
+  display: inline-flex;
+  align-items: center;
+}
+
+.captured-icon {
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1;
+  margin-right: -2px; /* slight overlap like chess.com */
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+}
+
+.captured-score {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold-light);
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 6px;
+  padding: 1px 7px;
+  letter-spacing: 0.5px;
+  margin-left: 4px;
+}
+
+

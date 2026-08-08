@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { Chess } from 'chess.js';
 import { supabase } from '../supabase.js';
 
 const router = Router();
@@ -232,22 +233,68 @@ router.get('/:code', async (req: Request, res: Response) => {
       const elapsedSec = Math.max(0, Math.floor((now - lastUpdate) / 1000));
       const turn = room.fen.split(' ')[1];
 
+      let timedOut = false;
+      let timedOutColor: 'white' | 'black' | null = null;
+
       if (turn === 'w') {
         const remaining = Math.max(0, room.white_time_left - elapsedSec);
         if (remaining <= 0) {
           room.white_time_left = 0;
-          room.status = 'finished';
-          room.winner = 'black';
-          await updateRoom(room.id, { white_time_left: 0, status: 'finished', winner: 'black' });
+          timedOut = true;
+          timedOutColor = 'white';
         }
       } else {
         const remaining = Math.max(0, room.black_time_left - elapsedSec);
         if (remaining <= 0) {
           room.black_time_left = 0;
-          room.status = 'finished';
-          room.winner = 'white';
-          await updateRoom(room.id, { black_time_left: 0, status: 'finished', winner: 'white' });
+          timedOut = true;
+          timedOutColor = 'black';
         }
+      }
+
+      if (timedOut && timedOutColor) {
+        // ── Score-based timeout win ─────────────────────────────────────────
+        // Replay all moves with chess.js to get exact captured piece types
+        const VALS: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9 };
+        let whiteScore = 0;
+        let blackScore = 0;
+
+        try {
+          const replayBoard = new Chess();
+          for (const san of room.pgn_moves) {
+            const moveResult = replayBoard.move(san);
+            if (moveResult && moveResult.captured) {
+              const capturedVal = VALS[moveResult.captured] || 0;
+              if (moveResult.color === 'w') {
+                whiteScore += capturedVal; // White captured a black piece
+              } else {
+                blackScore += capturedVal; // Black captured a white piece
+              }
+            }
+          }
+        } catch {
+          // PGN replay failed — fallback: opponent wins
+        }
+
+        // Determine winner: higher score wins; if tied, standard rule — opponent of timed-out player wins
+        let winner: string;
+        if (whiteScore > blackScore) {
+          winner = 'white';
+        } else if (blackScore > whiteScore) {
+          winner = 'black';
+        } else {
+          winner = timedOutColor === 'white' ? 'black' : 'white';
+        }
+
+        room.status = 'finished';
+        room.winner = winner;
+        const timeoutUpdates: Partial<RoomRecord> = {
+          status: 'finished',
+          winner,
+        };
+        if (timedOutColor === 'white') timeoutUpdates.white_time_left = 0;
+        else timeoutUpdates.black_time_left = 0;
+        await updateRoom(room.id, timeoutUpdates);
       }
     }
 
@@ -257,6 +304,8 @@ router.get('/:code', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to get room' });
   }
 });
+
+
 
 // ── PATCH /api/rooms/:id/join — second player joins ──────────────────────────
 router.patch('/:id/join', async (req: Request, res: Response) => {

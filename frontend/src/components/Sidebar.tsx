@@ -1,5 +1,9 @@
+import { useMemo } from 'react';
+import { Chess } from 'chess.js';
 import { useGameStore } from '../store/gameStore';
 import ChessClock from './ChessClock';
+import CapturedPieces from './CapturedPieces';
+import { computeCaptures } from '../lib/scoring';
 import toast from 'react-hot-toast';
 
 interface SidebarProps {
@@ -23,7 +27,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const {
     roomCode, myColor, myName, opponentName,
-    status, pgnMoves,
+    status, pgnMoves, fen,
   } = useGameStore();
 
   // Build move pairs for the PGN display
@@ -45,6 +49,23 @@ export default function Sidebar({
     }
   };
 
+  // ── Compute captures & scores from current game history ──────────────────
+  const captures = useMemo(() => {
+    try {
+      const c = new Chess();
+      // Replay all PGN moves to get full verbose history
+      for (const san of pgnMoves) {
+        c.move(san);
+      }
+      return computeCaptures(c.history({ verbose: true }));
+    } catch {
+      return { whiteCaptured: [], blackCaptured: [], whiteScore: 0, blackScore: 0, scoreAdvantage: 0 };
+    }
+  }, [pgnMoves]);
+
+  const whiteAdvantage = Math.max(0, captures.scoreAdvantage);
+  const blackAdvantage = Math.max(0, -captures.scoreAdvantage);
+
   return (
     <div className="sidebar">
       {/* Top Room Header */}
@@ -62,7 +83,7 @@ export default function Sidebar({
 
       {/* Players Header with Live Clocks */}
       <div className="sidebar-players">
-        {/* Black Player */}
+        {/* Gold (Black) Player */}
         <div className={`player-card ${isBlackTurn ? 'active-turn' : ''}`}>
           <div className="player-avatar black">♛</div>
           <div className="player-info">
@@ -71,9 +92,15 @@ export default function Sidebar({
           </div>
           <ChessClock color="black" isTurn={isBlackTurn} />
         </div>
+        {/* Gold captured pieces tray */}
+        <CapturedPieces
+          captured={captures.blackCaptured}
+          advantage={blackAdvantage}
+          color="black"
+        />
 
         {/* White Player */}
-        <div className={`player-card ${isWhiteTurn ? 'active-turn' : ''}`}>
+        <div className={`player-card ${isWhiteTurn ? 'active-turn' : ''}`} style={{ marginTop: 6 }}>
           <div className="player-avatar white">♔</div>
           <div className="player-info">
             <div className="player-name">{myColor === 'white' ? myName : opponentName || 'Waiting...'}</div>
@@ -81,6 +108,12 @@ export default function Sidebar({
           </div>
           <ChessClock color="white" isTurn={isWhiteTurn} />
         </div>
+        {/* White captured pieces tray */}
+        <CapturedPieces
+          captured={captures.whiteCaptured}
+          advantage={whiteAdvantage}
+          color="white"
+        />
       </div>
 
       <div className="sidebar-divider" />
