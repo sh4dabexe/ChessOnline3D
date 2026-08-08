@@ -519,7 +519,7 @@ export default function Game() {
           shadows
           camera={{ position: myColor === 'black' ? [4, 8, -4] : [4, 8, 12], fov: 42 }}
           style={{ background: 'linear-gradient(180deg, #0b0a12 0%, #160d1c 100%)' }}
-          gl={{ antialias: true, shadowMapType: 2 }}
+          gl={{ antialias: true }}
         >
           <ambientLight intensity={0.65} color="#FFFBF5" />
           {/* Main Key Studio Light */}

@@ -59,7 +59,7 @@ export default function FloatingChat({ onSend }: FloatingChatProps) {
 
     newMsgs.forEach((msg) => {
       // Only show notification for opponent chat messages, not own messages or events
-      if (msg.type !== 'chat') return;
+      if (msg.type !== 'chat' || !msg.sender) return;
       const isOwn = msg.sender === myName;
       if (isOwn) return;
 
@@ -168,17 +168,18 @@ export default function FloatingChat({ onSend }: FloatingChatProps) {
                 </div>
               );
             }
-            const isOwn = msg.sender === myName;
+            const isOwn = msg.sender ? msg.sender === myName : false;
+            const displayName = msg.sender || 'Unknown';
             return (
               <div key={msg.id} className={`chat-bubble-row ${isOwn ? 'own' : 'opponent'}`}>
                 {!isOwn && (
                   <div className={`chat-bubble-avatar ${msg.color}`}>
-                    {msg.sender.charAt(0).toUpperCase()}
+                    {displayName.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div className="chat-bubble-col">
                   {!isOwn && (
-                    <span className={`chat-bubble-name ${msg.color}`}>{msg.sender}</span>
+                    <span className={`chat-bubble-name ${msg.color}`}>{displayName}</span>
                   )}
                   <div className={`chat-bubble ${isOwn ? 'chat-bubble--own' : 'chat-bubble--opp'}`}>
                     {msg.text}
